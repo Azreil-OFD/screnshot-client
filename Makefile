@@ -3,7 +3,7 @@ NODE_PATH := $(shell command -v node)
 SERVER_BINARY = server
 
 # Задача по умолчанию
-default: install
+default: build pregenerate generate codesign
 
 pregenerate: copy_server remove_signature
 
@@ -32,3 +32,5 @@ install:
 build:
 	npm run build
 
+codesign:
+	codesign --sign - server
